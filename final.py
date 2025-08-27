@@ -1,4 +1,4 @@
-# safety_tracker.py
+# final.py  (Safety Equipment Tracker)
 import os
 import logging
 from datetime import datetime, timedelta, date
@@ -46,7 +46,7 @@ class Equipment(db.Model):
     expiry_date = db.Column(db.Date, nullable=False)
     employee_id = db.Column(db.Integer, db.ForeignKey("employee.id"), nullable=True)
 
-    # NEW: retirement state (hide from equipment pages when retired)
+    # retirement state (hide from equipment pages when retired)
     is_retired = db.Column(db.Boolean, default=False, nullable=False)
     retired_on = db.Column(db.DateTime, nullable=True)
 
@@ -82,7 +82,6 @@ BASE_HTML = """
       --focus: 0 0 0 3px rgba(91,140,255,0.35);
       --trans-fast: .12s ease; --trans-med: .18s ease;
     }
-    /* Dark theme (default) */
     [data-theme="dark"] {
       --bg: #0b1220; --panel: #121a33; --text: #e8ecf3; --muted: #9aa8bf; --border: #223056;
       --primary: #5b8cff; --primary-2: #7aa5ff; --green: #3ddc97; --green-2: #2cc386; --red: #ff6b6b; --amber: #ffc857;
@@ -94,7 +93,6 @@ BASE_HTML = """
       --surface-raise: 0 10px 40px rgba(14,21,43,0.6);
       --link: #a8c1ff;
     }
-    /* Light theme */
     [data-theme="light"] {
       --bg: #f6f8fb; --panel: #ffffff; --text: #0f172a; --muted: #5b6577; --border: #e5e9f2;
       --primary: #315efb; --primary-2: #466dff; --green: #0bb07b; --green-2: #069a6b; --red: #e11d48; --amber: #f59e0b;
@@ -104,54 +102,43 @@ BASE_HTML = """
       --surface-raise: 0 10px 40px rgba(2,6,23,0.06);
       --link: #2748ff;
     }
-
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0; font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text); background: var(--grad-1); background-attachment: fixed; line-height: 1.55;
     }
-
     a { color: var(--link); text-decoration: none; }
     a:hover { text-decoration: underline; }
-
     header {
       position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(140%) blur(10px);
       background: linear-gradient(180deg, rgba(15,22,44,0.85), rgba(15,22,44,0.55)); border-bottom: 1px solid var(--border);
     }
     .container { max-width: 1180px; margin: 0 auto; padding: 16px 20px; }
-
     .topbar { display:flex; align-items:center; gap:16px; }
     .logo-img { height: 42px; width: 42px; border-radius: 9px; background:#fff; padding: 3px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
     .brand { display:flex; flex-direction:column; }
     .brand-title { margin:0; font-weight:800; letter-spacing:0.2px; font-size:19px; }
     .brand-sub { margin:0; color: var(--muted); font-size:12px; }
-
     nav { margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .nav-link, .nav-badge { text-decoration:none; color: var(--text); font-weight:600; padding:9px 12px; border-radius: 12px; border:1px solid transparent; transition: all var(--trans-med); }
     .nav-link:hover { background: var(--chip-bg); border-color: var(--chip-border); transform: translateY(-1px); }
     .nav-badge { background: var(--chip-bg); border-color: var(--chip-border); font-weight:700; letter-spacing:.2px; }
-
     .theme-toggle { border:1px solid var(--chip-border); background: var(--chip-bg); padding:8px 12px; border-radius: 12px; cursor:pointer; font-weight:700; transition: all var(--trans-fast); }
     .theme-toggle:hover { transform: translateY(-1px); }
-
     main { padding: 26px 20px 40px; }
     .panel { background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 94%, transparent), color-mix(in oklab, var(--panel) 88%, transparent)); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--surface-raise); padding: 18px; }
-
     h2 { margin: 0 0 12px; font-weight:800; letter-spacing: .2px; }
     h2 .hint { font-size: 13px; font-weight:600; color: var(--muted); margin-left:8px; }
     .subtle { color: var(--muted); margin-top: 6px; }
-
     .row { display:grid; grid-template-columns: repeat(4, minmax(230px, 1fr)); gap:14px; }
     @media (max-width: 1080px) { .row { grid-template-columns: repeat(2, minmax(230px, 1fr)); } }
     @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
-
     .card { background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 70%, transparent), color-mix(in oklab, var(--panel) 40%, transparent)); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 16px 14px; box-shadow: var(--shadow-1); min-width: 200px; position: relative; overflow: hidden; isolation:isolate; }
     .card::after { content:""; position:absolute; inset:-1px; background: radial-gradient(250px 80px at 0 -20%, color-mix(in srgb, var(--primary) 35%, transparent), transparent 70%); pointer-events:none; opacity:.7; }
     .card h3 { margin:0 0 10px; font-size:12px; color: var(--muted); font-weight:800; text-transform: uppercase; letter-spacing:.8px; }
     .card .big { font-size:34px; font-weight:800; }
     .card .accent { color: var(--primary-2); }
-
     .btn { padding:10px 12px; border-radius: 12px; border:1px solid transparent; cursor:pointer; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition: transform var(--trans-fast), filter var(--trans-fast), box-shadow var(--trans-fast); }
     .btn:focus { outline: none; box-shadow: var(--focus); }
     .btn-primary { background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 85%, #2248ff)); color:#fff; }
@@ -162,36 +149,27 @@ BASE_HTML = """
     .btn-danger:hover { transform: translateY(-1px); }
     .btn-link { color: var(--primary-2); background: transparent; border: none; padding:0; cursor:pointer; }
     .actions { white-space:nowrap; display:flex; gap:8px; }
-
     form input[type=text], form input[type=date], form select, form input[type=password] {
       padding:12px 12px; margin:6px 0 10px; border:1px solid var(--border); border-radius: 12px; width:360px; max-width:100%; background: color-mix(in oklab, var(--panel) 30%, transparent); color: var(--text); outline:none; transition: box-shadow var(--trans-med), border-color var(--trans-med), background var(--trans-med);
     }
     form input[type=text]:focus, form input[type=date]:focus, form select:focus, form input[type=password]:focus { border-color: var(--primary-2); box-shadow: var(--focus); background: color-mix(in oklab, var(--panel) 45%, transparent); }
     form input[type=submit] { margin-top:6px; }
-
     .toolbar { display:flex; gap:8px; align-items:center; margin: 4px 0 10px; }
     .toolbar .search { flex:1; }
     .toolbar input[type=search] { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background: color-mix(in oklab, var(--panel) 30%, transparent); color: var(--text); }
-
     .table-wrap { overflow-x:auto; border-radius: var(--radius); border:1px solid var(--border); }
     table { width:100%; border-collapse: separate; border-spacing: 0; background: color-mix(in oklab, var(--panel) 20%, transparent); }
     thead th { position:sticky; top:0; z-index:1; background: linear-gradient(180deg, color-mix(in oklab, var(--primary) 12%, transparent), color-mix(in oklab, var(--primary) 6%, transparent)); color: var(--text); text-align:left; padding:12px; font-size:13px; letter-spacing:.3px; border-bottom:1px solid var(--border); }
     tbody td { padding:12px; border-bottom:1px solid var(--border); }
     tbody tr:nth-child(odd) td { background: var(--table-stripe); }
     tbody tr:hover td { background: color-mix(in oklab, var(--primary) 6%, transparent); }
-
     .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius: 999px; background: var(--chip-bg); border:1px solid var(--chip-border); font-weight:700; font-size:12px; }
     .chip.ok { color:#a7f3d0; border-color: rgba(61,220,151,0.35); }
     .chip.warn { color:#ffe6b0; border-color: rgba(255,200,87,0.35); }
-
     .flash { background: color-mix(in oklab, var(--amber) 12%, transparent); border:1px solid color-mix(in oklab, var(--amber) 35%, transparent); color: #ffe6b0; padding: 10px 12px; border-radius: 12px; margin: 12px 0; }
-
     .muted { color: var(--muted); font-size: 0.95em; }
     .spacer { height: 6px; }
-
     footer { color: var(--muted); font-size: 12px; text-align:center; padding: 24px 0 36px; }
-
-    /* Print-friendly */
     @media print {
       header, nav, .flash, .btn, .actions, .theme-toggle, .toolbar { display:none !important; }
       body { background: #fff; color: #111827; }
@@ -249,7 +227,6 @@ BASE_HTML = """
   </footer>
 
   <script>
-    // Theme persistence + search filter for tables
     (function(){
       const root = document.documentElement;
       const btn = document.getElementById('themeBtn');
@@ -261,12 +238,9 @@ BASE_HTML = """
         root.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
       });
-      // Auto-hide flash messages
       setTimeout(() => {
         document.querySelectorAll('.flash').forEach(el => el.style.display = 'none');
       }, 3000);
-
-      // Client-side filter for any table with data-filter="true"
       document.querySelectorAll('[data-filter="true"]').forEach(wrapper => {
         const input = wrapper.querySelector('input[type="search"]');
         const rows = wrapper.querySelectorAll('tbody tr');
@@ -289,7 +263,6 @@ app.jinja_loader = DictLoader({"base.html": BASE_HTML})
 # ── Helpers / Decorators ─────────────────────────────────────────────
 @app.context_processor
 def inject_globals():
-    # expose date to templates and keep existing globals
     return {"near_days": NEAR_EXPIRY_DAYS, "session": session, "date": date}
 
 def login_required(f):
@@ -424,7 +397,6 @@ def my_dashboard():
 @app.route("/me/equipment")
 @login_required
 def my_equipment():
-    # Kept for backward compatibility; redirect to dashboard
     return redirect(url_for("my_dashboard"))
 
 # ── Admin Views / CRUD ───────────────────────────────────────────────
@@ -567,7 +539,6 @@ def add_employee():
 @admin_required
 def remove_employee(emp_id):
     emp = Employee.query.get_or_404(emp_id)
-    # Unassign equipment (don't retire here; just unassign)
     for eq in emp.equipments:
         eq.employee_id = None
     db.session.delete(emp)
@@ -745,7 +716,6 @@ def raise_issue(eq_id):
         db.session.add(issue)
         db.session.commit()
         flash("Issue raised.")
-        # Redirect smartly
         if session.get("is_admin"):
             return redirect(url_for("admin_dashboard"))
         elif session.get("employee_id"):
@@ -763,25 +733,20 @@ def raise_issue(eq_id):
         eq=eq,
     )
 
-# Toggle resolve / reopen
 @app.route("/issues/resolve/<int:issue_id>")
 @admin_required
 def resolve_issue(issue_id):
     issue = Issue.query.get_or_404(issue_id)
     eq = issue.equipment
 
-    # Toggle state
     issue.is_resolved = not issue.is_resolved
     issue.resolved_on = datetime.utcnow() if issue.is_resolved else None
 
-    # If solved, unassign and retire equipment so it vanishes from dashboards
     if issue.is_resolved and eq:
         eq.employee_id = None
         eq.is_retired = True
         eq.retired_on = datetime.utcnow()
 
-    # If reopened, allow equipment to come back (optional behavior).
-    # Comment these 3 lines if you never want a reopened issue to reactivate the equipment.
     if not issue.is_resolved and eq:
         eq.is_retired = False
         eq.retired_on = None
@@ -794,7 +759,6 @@ def resolve_issue(issue_id):
     )
     return redirect(url_for("list_issues"))
 
-# Delete issue
 @app.route("/issues/delete/<int:issue_id>")
 @admin_required
 def delete_issue(issue_id):
@@ -850,13 +814,19 @@ def ensure_equipment_retire_columns():
         if "retired_on" not in cols:
             conn.execute(text('ALTER TABLE "equipment" ADD COLUMN retired_on TIMESTAMP NULL'))
 
-# ── Main ─────────────────────────────────────────────────────────────
-if __name__ == "__main__":
+def init_db():
+    """Run on import so it executes on Render (Gunicorn) and locally."""
     with app.app_context():
         db.create_all()
-        ensure_issue_status_columns()     # ensure new Issue columns exist
-        ensure_equipment_retire_columns() # ensure new Equipment columns exist
+        ensure_issue_status_columns()
+        ensure_equipment_retire_columns()
         seed_if_empty()
+
+# IMPORTANT: initialize DB at import time (fixes: no such table on Render)
+init_db()
+
+# ── Main (local dev only) ────────────────────────────────────────────
+if __name__ == "__main__":
     # Optional: list routes to confirm what's available
     print("\nRegistered routes:")
     for r in app.url_map.iter_rules():
